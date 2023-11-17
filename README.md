@@ -1148,7 +1148,7 @@ Example using the [Container Service](https://github.com/tobento-ch/service-cont
 composer require tobento/service-container
 ```
 
-```
+```php
 use Tobento\Service\Container\Container;
 use Tobento\Service\Schedule\Task;
 use Tobento\Service\Schedule\Parameter;
