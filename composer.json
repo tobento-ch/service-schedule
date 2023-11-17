@@ -1,0 +1,71 @@
+{
+    "name": "tobento/service-schedule",
+    "type": "library",
+    "description": "A task schedule system for running tasks at specific intervals.",
+    "keywords": [
+        "tobento",
+        "package",
+        "PHP",
+        "schedule",
+        "task"
+    ],
+    "homepage": "https://www.tobento.ch",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tobias Strub",
+            "email": "info@tobento.ch",
+            "homepage": "https://www.tobento.ch"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.0",
+        "psr/container": "^2.0",
+        "psr/clock": "^1.0",
+        "psr/simple-cache": "2 - 3",
+        "psr/event-dispatcher": "^1.0",
+        "tobento/service-autowire": "^1.0.9",
+        "tobento/service-file-creator": "^1.0.1",
+        "tobento/service-collection": "^1.0.5",
+        "dragonmantank/cron-expression": "^3.1",
+        "butschster/cron-expression-generator": "^1.10"
+    },
+    "suggest": {
+        "tobento/service-console": "To support command tasks",
+        "tobento/service-event": "May be used to support schedule and task events",
+        "tobento/service-cache": "May be used to support task without overlapping",
+        "tobento/service-mail": "May be used to support sending mails",
+        "symfony/process": "Required to support the process task",
+        "guzzlehttp/guzzle": "Required to support the ping task and parameter"
+    },    
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "vimeo/psalm": "^4.0",
+        "tobento/service-container": "^1.0.6",
+        "tobento/service-clock": "^1.0",
+        "tobento/service-console": "^1.0.3",
+        "tobento/service-event": "^1.0",
+        "tobento/service-cache": "^1.0",
+        "tobento/service-mail": "^1.0",
+        "symfony/process": "^4.4|^5.4|^6.0",
+        "guzzlehttp/guzzle": "^7.8",
+        "mockery/mockery": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tobento\\Service\\Schedule\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tobento\\Service\\Schedule\\Test\\": "tests",
+            "Tobento\\Service\\Console\\Test\\": "vendor/tobento/service-console/tests"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --testdox --colors=always",
+        "psalm": "vendor/bin/psalm"
+    }
+}
