@@ -90,7 +90,7 @@ composer require tobento/service-clock
 composer require tobento/service-container
 ```
 
-```
+```php
 use Tobento\Service\Clock\SystemClock;
 use Tobento\Service\Container\Container;
 use Tobento\Service\Console\Console;
