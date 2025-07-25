@@ -39,11 +39,11 @@ final class CommandTask extends AbstractTask
      * Create a new CommandTask.
      *
      * @param string $command
-     * @param array $input
+     * @param string|array $input
      */
     public function __construct(
         private string $command,
-        private array $input = [],
+        private string|array $input = [],
     ) {}
     
     /**
@@ -99,9 +99,9 @@ final class CommandTask extends AbstractTask
     /**
      * Return the input.
      *
-     * @return array
+     * @return string|array
      */
-    public function getInput(): array
+    public function getInput(): string|array
     {
         return $this->input;
     }
