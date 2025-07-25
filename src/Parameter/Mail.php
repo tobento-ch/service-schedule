@@ -89,10 +89,17 @@ class Mail extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
         }
         
         if (empty($this->message->getSubject())) {
-            $this->message->subject($task->getName());
+            $this->message->subject('Task :status: :name');
         }
         
-        $this->message->subject('Task Starting: '.$this->message->getSubject());
+        $subject = trim(strtr($this->message->getSubject(), [
+            ':status' => 'Starting',
+            ':id' => $task->getId(),
+            ':name' => $task->getName(),
+            ':description' => $task->getDescription(),
+        ]));
+        
+        $this->message->subject($subject);
         
         $this->message->text(sprintf(
             "Task Status: %s\n\nTask ID: %s\n\nTask Name: %s\n\nTask Description: %s",
@@ -119,10 +126,17 @@ class Mail extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
         }
         
         if (empty($this->message->getSubject())) {
-            $this->message->subject($result->task()->getName());
+            $this->message->subject('Task :status: :name');
         }
         
-        $this->message->subject('Task Success: '.$this->message->getSubject());
+        $subject = trim(strtr($this->message->getSubject(), [
+            ':status' => 'Success',
+            ':id' => $result->task()->getId(),
+            ':name' => $result->task()->getName(),
+            ':description' => $result->task()->getDescription(),
+        ]));
+        
+        $this->message->subject($subject);
         
         $this->message->text(sprintf(
             "Task Status: %s\n\nTask ID: %s\n\nTask Name: %s\n\nTask Description: %s\n\nTask Output: %s",
@@ -150,10 +164,17 @@ class Mail extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
         }
         
         if (empty($this->message->getSubject())) {
-            $this->message->subject($result->task()->getName());
+            $this->message->subject('Task :status: :name');
         }
         
-        $this->message->subject('Task Failed: '.$this->message->getSubject());
+        $subject = trim(strtr($this->message->getSubject(), [
+            ':status' => 'Failed',
+            ':id' => $result->task()->getId(),
+            ':name' => $result->task()->getName(),
+            ':description' => $result->task()->getDescription(),
+        ]));
+        
+        $this->message->subject($subject);
         
         $this->message->text(sprintf(
             "Task Status: %s\n\nTask ID: %s\n\nTask Name: %s\n\nTask Description: %s\n\nTask Output: %s\n\nTask Exception: %s",
