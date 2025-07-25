@@ -85,6 +85,26 @@ class MailTest extends TestCase
         $this->assertStringContainsString('Task Output: task output', $message->getText());
     }
     
+    public function testAfterTaskMethodWithCustomMessage()
+    {
+        $message = (new Message())
+            ->to('admin@example.com')
+            ->subject('Task :status, :id, :name, :description');
+        
+        $param = new Mail(message: $message);
+        
+        $result = new TaskResult(
+            task: (new Task\CallableTask(function() {
+                return 'task output';
+            }))->id('foo')->name('Foo')->description('Lorem'),
+            output: 'task output',
+        );
+        
+        $param->getAfterTaskHandler()($result, $this->createMailer());
+        
+        $this->assertSame('Task Success, foo, Foo, Lorem', $message->getSubject());
+    }
+    
     public function testBeforeTaskMethod()
     {
         $message = (new Message())->to('admin@example.com');
