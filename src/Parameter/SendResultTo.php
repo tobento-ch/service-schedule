@@ -55,7 +55,7 @@ class SendResultTo extends Parameter implements AfterTaskHandler, FailedTaskHand
      */
     public function getAfterTaskHandler(): callable
     {
-        return [$this, 'sendResult'];
+        return [$this, 'afterTask'];
     }
     
     /**
@@ -65,7 +65,37 @@ class SendResultTo extends Parameter implements AfterTaskHandler, FailedTaskHand
      */
     public function getFailedTaskHandler(): callable
     {
-        return [$this, 'sendResult'];
+        return [$this, 'failedTask'];
+    }
+    
+    /**
+     * After task.
+     *
+     * @param TaskInterface $task
+     * @return void
+     */
+    public function afterTask(TaskResultInterface $result): void
+    {
+        if (!in_array('after', $this->handle)) {
+            return;
+        }
+        
+        $this->sendResult($result);
+    }
+    
+    /**
+     * Failed task.
+     *
+     * @param TaskInterface $task
+     * @return void
+     */
+    public function failedTask(TaskResultInterface $result): void
+    {
+        if (!in_array('failed', $this->handle)) {
+            return;
+        }
+        
+        $this->sendResult($result);
     }
     
     /**
@@ -74,7 +104,7 @@ class SendResultTo extends Parameter implements AfterTaskHandler, FailedTaskHand
      * @param TaskInterface $task
      * @return void
      */
-    public function sendResult(TaskResultInterface $result): void
+    protected function sendResult(TaskResultInterface $result): void
     {
         $handling = $this->append ? FileCreator::CONTENT_APPEND : FileCreator::CONTENT_NEW;
         
