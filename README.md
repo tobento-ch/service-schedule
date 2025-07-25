@@ -26,6 +26,7 @@ A task schedule system for running tasks at specific intervals.
         - [Failed Parameter](#failed-parameter)
         - [Mail Parameter](#mail-parameter)
         - [Monitor Parameter](#monitor-parameter)
+        - [Notify Parameter](#notify-parameter)
         - [Ping Parameter](#ping-parameter)
         - [Send Result To Parameter](#send-result-to-parameter)
         - [Skip Parameter](#skip-parameter)
@@ -218,6 +219,9 @@ $task = new CommandTask(
         // with array value:
         '--some-option' => ['value'],
     ],
+    
+    // or you may pass the command, arguments and options as string
+    input: 'command:name Tom --bar=1',
 );
 
 var_dump($task instanceof TaskInterface);
@@ -643,19 +647,19 @@ $message = (new Message())
 
 **Message Contents**
 
-You may set a message subject otherwise the task name will be used instead:
+You may set a message subject otherwise the task status and name will be used instead:
 
 ```php
 use Tobento\Service\Mail\Message;
 
 $message = (new Message())
-    ->subject('Some task subject')
+    ->subject('Task :status, :id, :name, :description')
     ->to('admin@example.com');
 ```
 
 A sent mail looks like:
 
-```php
+```txt
 Task Status: Failed
 
 Task ID: task-id
@@ -681,6 +685,99 @@ $task = (new CommandTask('command:name'))
     ->parameter(new Parameter\Monitor())
     // or using the helper method:
     ->monitor();
+```
+
+### Notify Parameter
+
+The notify parameter may be used to send notifications using the [Notifier Service](https://github.com/tobento-ch/service-notifier) before and/or after tasks are processed or when a task fails.
+
+```php
+use Tobento\Service\Notifier\Recipient;
+use Tobento\Service\Schedule\Task\CommandTask;
+use Tobento\Service\Schedule\Parameter;
+
+$task = (new CommandTask('command:name'))
+    ->parameter(new Parameter\Notify(
+        recipient: new Recipient(
+            email: 'mail@example.com',
+            phone: '15556666666',
+            channels: ['mail', 'sms'],
+        ),
+        
+        // You may customize the notification subject:
+        subject: 'Task :status, :id, :name, :description',
+        
+        // You may set a queue name to send the notification to the queue:
+        queueName: 'file', // null default
+        
+        handle: ['before', 'after', 'failed'], // default
+        // send notification only if task failed:
+        // handle: ['failed'],
+    ));
+```
+
+In addition, you may use the ```before```, ```after``` and ```failed``` helper methods:
+
+```php
+use Tobento\Service\Notifier\Recipient;
+use Tobento\Service\Schedule\Task\CommandTask;
+use Tobento\Service\Schedule\Parameter;
+
+$task = (new CommandTask('command:name'))
+    ->before(new Parameter\Notify(
+        recipient: new Recipient(email: 'mail@example.com'),
+    ))
+    ->after(new Parameter\Notify(
+        recipient: new Recipient(email: 'mail@example.com'),
+    ))
+    ->failed(new Parameter\Notify(
+        recipient: new Recipient(email: 'mail@example.com'),
+    ));
+```
+
+**Requirements**
+
+This parameter requires the [**Notifier Service**](https://github.com/tobento-ch/service-notifier) and the [**Queue Service**](https://github.com/tobento-ch/service-queue) if you want to queue notifications:
+
+First, install the mail service:
+
+```
+composer require tobento/service-notifier
+composer require tobento/service-queue
+```
+
+Finally, it requires the ```NotifierInterface::class``` to be binded to your container passed to the [Task Processor](#task-processor):
+
+Example using the [Container Service](https://github.com/tobento-ch/service-container):
+
+```php
+use Tobento\Service\Notifier\NotifierInterface;
+use Tobento\Service\Schedule\TaskProcessor;
+use Tobento\Service\Container\Container;
+
+$container = new Container();
+$container->set(NotifierInterface, function() {
+    // create notifier:
+    return $notifier;
+});
+
+$taskProcessor = new TaskProcessor($container);
+```
+
+A sent notification may look like depending on the channel:
+
+```txt
+Task Status: Failed
+
+Task ID: task-id
+
+Task Name: Task's name
+
+Task Description: Task's description (if any)
+
+Task Output: Failed task's output (if any)
+
+Task Exception: Failed task's exception stack trace (if any)
 ```
 
 ### Ping Parameter
