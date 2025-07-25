@@ -37,6 +37,7 @@
         "tobento/service-event": "May be used to support schedule and task events",
         "tobento/service-cache": "May be used to support task without overlapping",
         "tobento/service-mail": "May be used to support sending mails",
+        "tobento/service-notifier": "May be used to support sending notifications",
         "symfony/process": "Required to support the process task",
         "guzzlehttp/guzzle": "Required to support the ping task and parameter"
     },    
@@ -49,6 +50,7 @@
         "tobento/service-event": "^1.0",
         "tobento/service-cache": "^1.0",
         "tobento/service-mail": "^1.0",
+        "tobento/service-notifier": "^1.0",
         "symfony/process": "^4.4|^5.4|^6.0",
         "guzzlehttp/guzzle": "^7.8",
         "mockery/mockery": "^1.6"
