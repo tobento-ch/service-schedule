@@ -21,9 +21,11 @@ use Throwable;
 final class TaskResult implements TaskResultInterface
 {
     /**
-     * Create a new Result.
+     * Create a new TaskResult instance.
      *
-     * @param Closure $callable
+     * @param TaskInterface $task
+     * @param string $output
+     * @param null|Throwable $exception
      */
     public function __construct(
         private TaskInterface $task,
