@@ -40,15 +40,15 @@ class TaskProcessor implements TaskProcessorInterface
     public function processTask(TaskInterface $task): TaskResultInterface
     {
         try {
-            $this->handleBeforeTask($task);
+            $this->handleBeforeTask($this->container, $task);
             $result = $task->processTask($this->container);
-            $this->handleAfterTask($task, $result);
+            $this->handleAfterTask($this->container, $task, $result);
             return $result;
         } catch (TaskSkipException $e) {
             return new TaskResult(task: $task, exception: $e);
         } catch (Throwable $e) {
             $result = new TaskResult(task: $task, exception: $e);
-            $this->handleFailedTask($task, $result);
+            $this->handleFailedTask($this->container, $task, $result);
             return $result;
         }
     }
@@ -56,13 +56,14 @@ class TaskProcessor implements TaskProcessorInterface
     /**
      * Handle before task.
      *
+     * @param ContainerInterface $container
      * @param TaskInterface $task
      * @return void
      * @throws Throwable
      */
-    protected function handleBeforeTask(TaskInterface $task): void
+    protected function handleBeforeTask(ContainerInterface $container, TaskInterface $task): void
     {
-        $autowire = new Autowire($this->container);
+        $autowire = new Autowire($container);
         
         // sorts by priority, highest first.
         foreach($task->parameters()->sort() as $parameter) {
@@ -75,14 +76,15 @@ class TaskProcessor implements TaskProcessorInterface
     /**
      * Handle after task.
      *
+     * @param ContainerInterface $container
      * @param TaskInterface $task
      * @param TaskResultInterface $result
      * @return void
      * @throws Throwable
      */
-    protected function handleAfterTask(TaskInterface $task, TaskResultInterface $result): void
+    protected function handleAfterTask(ContainerInterface $container, TaskInterface $task, TaskResultInterface $result): void
     {
-        $autowire = new Autowire($this->container);
+        $autowire = new Autowire($container);
 
         // sorts by priority, highest last.
         $callback = fn(ParameterInterface $a, ParameterInterface $b): int
@@ -98,14 +100,15 @@ class TaskProcessor implements TaskProcessorInterface
     /**
      * Handle failed task.
      *
+     * @param ContainerInterface $container
      * @param TaskInterface $task
      * @param TaskResultInterface $result
      * @return void
      * @throws Throwable
      */
-    protected function handleFailedTask(TaskInterface $task, TaskResultInterface $result): void
+    protected function handleFailedTask(ContainerInterface $container, TaskInterface $task, TaskResultInterface $result): void
     {
-        $autowire = new Autowire($this->container);
+        $autowire = new Autowire($container);
         
         // sorts by priority, highest first.
         foreach($task->parameters()->sort() as $parameter) {
