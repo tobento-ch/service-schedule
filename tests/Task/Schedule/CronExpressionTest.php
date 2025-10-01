@@ -60,7 +60,7 @@ class CronExpressionTest extends TestCase
     public function testGetNextRunDateMethodWithoutCurrentDate()
     {
         $this->assertSame(
-            '2023-11-15 16:16:00 +01:00',
+            '2023-11-15 16:16:00 +00:00',
             (new CronExpression('* * * * *'))
                 ->getNextRunDate(now: new DateTime('2023-11-15 16:15'), allowCurrentDate: false)
                 ->format('Y-m-d H:i:s P')
