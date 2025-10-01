@@ -106,7 +106,7 @@ class ScheduleProcessorTest extends TestCase
         $schedule = new Schedule(name: 'default');
         $schedule->task((new Task\CallableTask(function() {}))->id('task1'));
         $schedule->task((new Task\CallableTask(function() {}))->id('task2')->cron('30 * * * *'));
-        $schedule->task((new Task\CallableTask(function() {$test();}))->id('task3')->cron('15 * * * *'));
+        $schedule->task((new Task\CallableTask(function() {@$test();}))->id('task3')->cron('15 * * * *'));
         
         $results = $processor->processSchedule(schedule: $schedule, now: new \DateTime('2023-11-14 16:15'));
         $this->assertCount(2, $results);
