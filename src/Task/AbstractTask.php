@@ -149,7 +149,7 @@ abstract class AbstractTask implements TaskInterface
     /**
      * Set the schedule.
      *
-     * @param string $expression
+     * @param TaskScheduleInterface $schedule
      * @return static $this
      */
     public function schedule(TaskScheduleInterface $schedule): static
