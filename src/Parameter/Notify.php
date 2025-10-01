@@ -149,7 +149,7 @@ class Notify extends Parameter implements BeforeTaskHandler, AfterTaskHandler, F
     /**
      * After task.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @param NotifierInterface $notifier
      * @return void
      */
@@ -190,7 +190,7 @@ class Notify extends Parameter implements BeforeTaskHandler, AfterTaskHandler, F
     /**
      * Failed task.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @param NotifierInterface $notifier
      * @return void
      */

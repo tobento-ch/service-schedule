@@ -132,8 +132,9 @@ class Monitor extends Parameter implements BeforeTaskHandler, AfterTaskHandler, 
     /**
      * After task.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @return void
+     * @psalm-suppress InvalidOperand
      */
     public function afterTask(TaskResultInterface $result): void
     {

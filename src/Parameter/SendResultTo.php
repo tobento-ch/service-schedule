@@ -71,7 +71,7 @@ class SendResultTo extends Parameter implements AfterTaskHandler, FailedTaskHand
     /**
      * After task.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @return void
      */
     public function afterTask(TaskResultInterface $result): void
@@ -86,7 +86,7 @@ class SendResultTo extends Parameter implements AfterTaskHandler, FailedTaskHand
     /**
      * Failed task.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @return void
      */
     public function failedTask(TaskResultInterface $result): void
@@ -101,7 +101,7 @@ class SendResultTo extends Parameter implements AfterTaskHandler, FailedTaskHand
     /**
      * Send task result.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @return void
      */
     protected function sendResult(TaskResultInterface $result): void

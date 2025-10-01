@@ -125,7 +125,7 @@ class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
     /**
      * After task.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @param null|ClientInterface $client
      * @return void
      */
@@ -149,7 +149,7 @@ class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
     /**
      * Failed task.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @param null|ClientInterface $client
      * @return void
      */

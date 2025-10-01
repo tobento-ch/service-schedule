@@ -115,7 +115,7 @@ class Mail extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
     /**
      * After task.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @param MailerInterface $mailer
      * @return void
      */
@@ -153,7 +153,7 @@ class Mail extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
     /**
      * Failed task.
      *
-     * @param TaskInterface $task
+     * @param TaskResultInterface $result
      * @param MailerInterface $mailer
      * @return void
      */
