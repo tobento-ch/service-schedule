@@ -6,7 +6,7 @@
  * @copyright   Tobias Strub, TOBENTO
  * @license     MIT License, see LICENSE file distributed with this source code.
  * @author      Tobias Strub
- * @link        https://www.tobento.ch
+ * @link        http://www.tobento.ch
  */
 
 declare(strict_types=1);
@@ -27,7 +27,7 @@ class PingTest extends TestCase
 {
     public function testThatImplementsInterfaces()
     {
-        $param = new Ping(uri: 'https://example.com/task');
+        $param = new Ping(uri: 'http://example.com/task');
         
         $this->assertInstanceof(ParameterInterface::class, $param);
         $this->assertInstanceof(AfterTaskHandler::class, $param);
@@ -37,14 +37,14 @@ class PingTest extends TestCase
 
     public function testGetNameMethod()
     {
-        $param = new Ping(uri: 'https://example.com/task');
+        $param = new Ping(uri: 'http://example.com/task');
         
         $this->assertSame(Ping::class, $param->getName());
     }
     
     public function testGetPriorityMethod()
     {
-        $param = new Ping(uri: 'https://example.com/task');
+        $param = new Ping(uri: 'http://example.com/task');
         
         $this->assertSame(0, $param->getPriority());
     }
@@ -52,19 +52,19 @@ class PingTest extends TestCase
     public function testSpecificMethods()
     {
         $param = new Ping(
-            uri: 'https://example.com/task',
+            uri: 'http://example.com/task',
             method: 'POST',
             options: ['key' => 'value'],
         );
 
-        $this->assertSame('https://example.com/task', $param->getUri());
+        $this->assertSame('http://example.com/task', $param->getUri());
         $this->assertSame('POST', $param->getMethod());
         $this->assertSame(['key' => 'value'], $param->getOptions());
     }
     
     public function testPingBefore()
     {
-        $param = new Ping(uri: 'https://example.com/task');
+        $param = new Ping(uri: 'http://example.com/task');
         
         $task = (new Task\CallableTask(function() {}));
         
@@ -79,7 +79,7 @@ class PingTest extends TestCase
     
     public function testPingAfter()
     {
-        $param = new Ping(uri: 'https://example.com/task');
+        $param = new Ping(uri: 'http://example.com/task');
         
         $task = (new Task\CallableTask(function() {}));
         $result = new TaskResult(task: $task);
@@ -95,7 +95,7 @@ class PingTest extends TestCase
     
     public function testPingFailed()
     {
-        $param = new Ping(uri: 'https://example.com/task');
+        $param = new Ping(uri: 'http://example.com/task');
         
         $task = (new Task\CallableTask(function() {}));
         $result = new TaskResult(task: $task);
