@@ -16,7 +16,7 @@ namespace Tobento\Service\Schedule;
 use IteratorAggregate;
 
 /**
- * ParametersInterface
+ * @extends IteratorAggregate<array-key, ParameterInterface>
  */
 interface ParametersInterface extends IteratorAggregate
 {

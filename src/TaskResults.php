@@ -116,7 +116,7 @@ final class TaskResults implements TaskResultsInterface
     /**
      * Returns the iterator. 
      *
-     * @return Traversable
+     * @return Traversable<int, TaskResultInterface>
      */
     public function getIterator(): Traversable
     {

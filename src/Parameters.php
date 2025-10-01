@@ -124,7 +124,7 @@ class Parameters implements ParametersInterface
     /**
      * Get the iterator. 
      *
-     * @return Traversable
+     * @return Traversable<array-key, ParameterInterface>
      */
     public function getIterator(): Traversable
     {

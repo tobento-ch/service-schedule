@@ -17,7 +17,7 @@ use IteratorAggregate;
 use Countable;
 
 /**
- * TaskResultsInterface
+ * @extends IteratorAggregate<int, TaskResultInterface>
  */
 interface TaskResultsInterface extends IteratorAggregate, Countable
 {
