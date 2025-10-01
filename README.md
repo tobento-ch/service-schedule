@@ -58,7 +58,7 @@ composer require tobento/service-schedule
 
 ## Requirements
 
-- PHP 8.0 or greater
+- PHP 8.4 or greater
 
 ## Highlights
 
@@ -120,12 +120,12 @@ $container->set(ScheduleInterface::class, function() {
     $schedule = new Schedule(name: 'default');
     
     $schedule->task(
-        (new Task\CallableTask(
+        new Task\CallableTask(
             callable: static function (): string {
                 // do something:
                 return 'task output';
             },
-        ))->name('demo')
+        )->name('demo')
     );
     
     return $schedule;
@@ -282,7 +282,7 @@ class SampleTask extends InvokableTask
     }
 }
 
-$task = (new SampleTask())->cron('* * * * *');
+$task = new SampleTask()->cron('* * * * *');
 ```
 
 Check out the [Task Methods](#task-methods) section to learn more about the available methods as well as the [Task Parameters](#task-parameters).
@@ -481,7 +481,7 @@ use Tobento\Service\Schedule\Parameter;
 use Tobento\Service\Schedule\TaskResultInterface;
 
 // any callable handler:
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\After(static function(TaskResultInterface $result, SomeService $service): void {
         // executes after the task is processed
     }))
@@ -491,7 +491,7 @@ $task = (new CommandTask('command:name'))
     });
 
 // or a handler implementing Parameter\AfterTaskHandler
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\After(handler: $handler))
     // or using the helper method:
     ->after(handler: $handler);
@@ -509,7 +509,7 @@ use Tobento\Service\Schedule\Parameter;
 use Tobento\Service\Schedule\TaskInterface;
 
 // any callable handler:
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Before(static function(TaskInterface $task, SomeService $service): void {
         // executes before the task is processed
     }))
@@ -519,7 +519,7 @@ $task = (new CommandTask('command:name'))
     });
 
 // or a handler implementing Parameter\BeforeTaskHandler
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Before(handler: $handler))
     // or using the helper method:
     ->before(handler: $handler);
@@ -534,7 +534,7 @@ use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\TaskSkipException;
 
 // any callable handler:
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->before(static function (): void {
         throw new TaskSkipException('Skipped because ...');
     });
@@ -552,7 +552,7 @@ use Tobento\Service\Schedule\Parameter;
 use Tobento\Service\Schedule\TaskResultInterface;
 
 // any callable handler:
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Failed(static function(TaskResultInterface $result, SomeService $service): void {
         // executes if the task failed
     }))
@@ -562,7 +562,7 @@ $task = (new CommandTask('command:name'))
     });
 
 // or a handler implementing Parameter\FailedTaskHandler
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Failed(handler: $handler))
     // or using the helper method:
     ->failed(handler: $handler);
@@ -577,7 +577,7 @@ use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 use Tobento\Service\Mail\Message;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Mail(
         message: (new Message())->to('admin@example.com'),
         handle: ['before', 'after', 'failed'], // default
@@ -593,7 +593,7 @@ use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 use Tobento\Service\Mail\Message;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->before(new Parameter\Mail(
         message: (new Message())->to('admin@example.com'),
     ))
@@ -640,7 +640,7 @@ If you do not have defined a [default from address](https://github.com/tobento-c
 ```php
 use Tobento\Service\Mail\Message;
 
-$message = (new Message())
+$message = new Message()
     ->from('from@example.com')
     ->to('admin@example.com');
 ```
@@ -652,7 +652,7 @@ You may set a message subject otherwise the task status and name will be used in
 ```php
 use Tobento\Service\Mail\Message;
 
-$message = (new Message())
+$message = new Message()
     ->subject('Task :status, :id, :name, :description')
     ->to('admin@example.com');
 ```
@@ -681,7 +681,7 @@ The monitor parameter may be used to monitor tasks processes such as the start t
 use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Monitor())
     // or using the helper method:
     ->monitor();
@@ -696,7 +696,7 @@ use Tobento\Service\Notifier\Recipient;
 use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Notify(
         recipient: new Recipient(
             email: 'mail@example.com',
@@ -723,7 +723,7 @@ use Tobento\Service\Notifier\Recipient;
 use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->before(new Parameter\Notify(
         recipient: new Recipient(email: 'mail@example.com'),
     ))
@@ -788,7 +788,7 @@ The ping parameter may be used to ping the provided URI.
 use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Ping(
         uri: 'https://example.com/task',
         method: 'GET', // default
@@ -807,7 +807,7 @@ In addition, you may use the ```before```, ```after``` and ```failed``` helper m
 use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->before(new Parameter\Ping(
         uri: 'https://example.com/task-before',
     ))
@@ -836,7 +836,7 @@ use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 use Tobento\Service\Schedule\TaskInterface;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\SendResultTo(
         file: 'dir/to/file.log',
         // if true sends only output, otherwise the whole result:
@@ -855,7 +855,7 @@ In addition, you may use the ```after``` and ```failed``` helper methods:
 use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->after(new Parameter\SendResultTo(
         file: 'dir/to/file-success.log',
     ))
@@ -874,7 +874,7 @@ use Tobento\Service\Schedule\Parameter;
 use Tobento\Service\Schedule\TaskInterface;
 
 // using a boolean:
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Skip(
         skip: true,
         
@@ -883,7 +883,7 @@ $task = (new CommandTask('command:name'))
     ));
     
 // using a callable:
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\Skip(
         skip: static function(TaskInterface $task, SomeService $service)
             // skips if return value is true
@@ -895,7 +895,7 @@ $task = (new CommandTask('command:name'))
     ));
     
 // or using the helper method:
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->skip(skip: $skip, reason: 'Because of ...');
 ```
 
@@ -909,7 +909,7 @@ The without overlapping parameter may be used to prevent tasks from overlapping.
 use Tobento\Service\Schedule\Task\CommandTask;
 use Tobento\Service\Schedule\Parameter;
 
-$task = (new CommandTask('command:name'))
+$task = new CommandTask('command:name')
     ->parameter(new Parameter\WithoutOverlapping(
         // You may set a unique id. If null it uses the task id.
         id: 'unique-task-id', // null|string
@@ -1097,9 +1097,9 @@ use Tobento\Service\Schedule\Parameter;
 use Butschster\CronExpression\Generator;
 
 $schedule->task(
-    (new Task\CommandTask(
+    new Task\CommandTask(
         command: 'command:name',
-    ))
+    )
     // schedule task:
     ->cron(Generator::create()->everyTenMinutes())
     // adding parameters:
@@ -1111,7 +1111,7 @@ $schedule->task(
 );
 
 $schedule->task(
-    (new Task\CallableTask(
+    new Task\CallableTask(
         callable: static function (SomeService $service, $option): string {
             // do something
             
@@ -1120,7 +1120,7 @@ $schedule->task(
         },
         // you may set data passed to the function:
         params: ['option' => 'value'],
-    ))
+    )
     ->name('Some name')
     ->description('Some description')
     // schedule task:
@@ -1193,13 +1193,13 @@ Otherwise, you need to install the [Console Service](https://github.com/tobento-
 **Running due tasks**
 
 ```
-php app schedule:run
+php ap schedule:run
 ```
 
 **Running specific tasks by its id**
 
 ```
-php app schedule:run --id=taskId --id=anotherTaskId
+php ap schedule:run --id=taskId --id=anotherTaskId
 ```
 
 ### List Command
@@ -1207,7 +1207,7 @@ php app schedule:run --id=taskId --id=anotherTaskId
 Lists all tasks.
 
 ```
-php app schedule:list
+php ap schedule:list
 ```
 
 ## Events
@@ -1265,12 +1265,12 @@ $container->set(ScheduleProcessorInterface::class, ScheduleProcessor::class);
 // Schedule tasks:
 $schedule = new Schedule(name: 'default');
 $schedule->task(
-    (new Task\CallableTask(
+    new Task\CallableTask(
         callable: static function (): string {
             // do something:
             return 'task output';
         },
-    ))->name('demo')
+    )->name('demo')
 );
 
 // Process the schedule:
