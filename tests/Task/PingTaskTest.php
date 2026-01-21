@@ -13,18 +13,19 @@ declare(strict_types=1);
 
 namespace Tobento\Service\Schedule\Test\Task;
 
+use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Tobento\Service\Schedule\Task\PingTask;
 use Tobento\Service\Schedule\TaskInterface;
 use Tobento\Service\Schedule\TaskScheduleInterface;
 use Tobento\Service\Schedule\ParametersInterface;
 use Tobento\Service\Schedule\Parameter;
 use Tobento\Service\Container\Container;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Client;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Response;
 
 class PingTaskTest extends TestCase
 {
@@ -80,37 +81,88 @@ class PingTaskTest extends TestCase
     public function testSpecificMethods()
     {
         $task = new PingTask(
-            uri: 'https://example.com/task',
+            uri: 'http://example.com/task',
             method: 'POST',
-            options: ['key' => 'value'],
+            query: ['foo' => 'bar'],
+            headers: ['Accept' => 'application/json'],
+            body: 'payload'
         );
-        
-        $this->assertSame('https://example.com/task', $task->getUri());
+
+        $this->assertSame('http://example.com/task', $task->getUri());
         $this->assertSame('POST', $task->getMethod());
-        $this->assertSame(['key' => 'value'], $task->getOptions());
+        $this->assertSame(['foo' => 'bar'], $task->getQuery());
+        $this->assertSame(['Accept' => 'application/json'], $task->getHeaders());
+        $this->assertSame('payload', $task->getBody());
         $this->assertSame(null, $task->getResponse());
     }
     
     public function testProcessTaskMethod()
     {
         $container = new Container();
-        
-        $mock = new MockHandler([
-            new Response(200, ['X-Foo' => 'Bar'], 'Hello, World'),
-        ]);
 
-        $handlerStack = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handlerStack]);
-        
+        // PSR-18 client (Symfony)
+        $client = new \Symfony\Component\HttpClient\Psr18Client(
+            new \Symfony\Component\HttpClient\MockHttpClient([
+                new \Symfony\Component\HttpClient\Response\MockResponse(
+                    'Hello, World',
+                    ['response_headers' => ['X-Foo' => 'Bar'], 'http_code' => 200]
+                )
+            ])
+        );
+
+        // Bind into container
         $container->set(ClientInterface::class, $client);
-        
+        $container->set(RequestFactoryInterface::class, new Psr17Factory());
+        $container->set(StreamFactoryInterface::class, new Psr17Factory());
+
+        // Create task
         $task = new PingTask(uri: '/');
-        
+
+        // Execute
         $result = $task->processTask($container);
-        
+
+        // Assertions
         $this->assertSame($task, $result->task());
         $this->assertTrue($result->isSuccessful());
         $this->assertSame('Hello, World', $result->output());
         $this->assertSame('Hello, World', (string)$task->getResponse()?->getBody());
+    }
+    
+    public function testProcessTaskBuildsCorrectRequest()
+    {
+        $container = new Container();
+        $client = new PingTaskSpyClient();
+
+        $container->set(ClientInterface::class, $client);
+        $container->set(RequestFactoryInterface::class, new Psr17Factory());
+        $container->set(StreamFactoryInterface::class, new Psr17Factory());
+
+        $task = new PingTask(
+            uri: 'https://example.com/ping',
+            method: 'POST',
+            query: ['foo' => 'bar'],
+            headers: ['Accept' => 'application/json'],
+            body: 'payload'
+        );
+
+        $task->processTask($container);
+
+        $request = $client->capturedRequest;
+
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame('https://example.com/ping?foo=bar', (string)$request->getUri());
+        $this->assertSame(['application/json'], $request->getHeader('Accept'));
+        $this->assertSame('payload', (string)$request->getBody());
+    }
+}
+
+class PingTaskSpyClient implements ClientInterface
+{
+    public ?RequestInterface $capturedRequest = null;
+
+    public function sendRequest(RequestInterface $request): ResponseInterface
+    {
+        $this->capturedRequest = $request;
+        return new \Nyholm\Psr7\Response(200, ['X-Foo' => 'Bar'], 'Hello, World');
     }
 }
