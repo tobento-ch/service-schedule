@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Tobento\Service\Schedule\Parameter;
 
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Tobento\Service\Schedule\Task\PingTask;
 use Tobento\Service\Schedule\TaskInterface;
 use Tobento\Service\Schedule\TaskResultInterface;
@@ -24,6 +25,11 @@ use Tobento\Service\Schedule\TaskResultInterface;
 class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, FailedTaskHandler
 {
     /**
+     * @var null|callable(ResponseInterface, PingTask): void
+     */
+    protected $failure = null;
+    
+    /**
      * Create a new Ping.
      *
      * @param string $uri
@@ -31,6 +37,10 @@ class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
      * @param array $query
      * @param array $headers
      * @param string|null $body
+     * @param null|callable(ResponseInterface, PingTask): void $failure
+     *     A callback that determines whether the ping should fail.
+     *     Throw any exception inside the callback to mark the task as failed.
+     *     If the callback completes without throwing an exception, the task is treated as successful.
      * @param array $handle
      */
     public function __construct(
@@ -40,7 +50,10 @@ class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
         protected array $headers = [],
         protected string|null $body = null,
         protected array $handle = ['before', 'after', 'failed'],
-    ) {}
+        null|callable $failure = null,
+    ) {
+        $this->failure = $failure;
+    }
 
     /**
      * Returns the uri.
@@ -90,6 +103,16 @@ class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
     public function getBody(): null|string
     {
         return $this->body;
+    }
+    
+    /**
+     * Returns the failure.
+     *
+     * @return null|callable
+     */
+    public function getFailure(): null|callable
+    {
+        return $this->failure;
     }
     
     /**
@@ -188,6 +211,7 @@ class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
             query: $this->getQuery(),
             headers: $headers,
             body: $this->getBody(),
+            failure: $this->getFailure(),
         );
 
         $task->processTask($container);

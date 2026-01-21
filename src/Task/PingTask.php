@@ -18,11 +18,17 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Tobento\Service\Schedule\TaskException;
 use Tobento\Service\Schedule\TaskResult;
 use Tobento\Service\Schedule\TaskResultInterface;
 
 class PingTask extends AbstractTask
 {
+    /**
+     * @var null|callable(ResponseInterface, PingTask): void
+     */
+    protected $failure = null;
+    
     /**
      * @var null|ResponseInterface
      */
@@ -36,6 +42,10 @@ class PingTask extends AbstractTask
      * @param array $query
      * @param array $headers
      * @param string|null $body
+     * @param null|callable(ResponseInterface, PingTask): void $failure
+     *     A callback that determines whether the ping should fail.
+     *     Throw any exception inside the callback to mark the task as failed.
+     *     If the callback completes without throwing an exception, the task is treated as successful.
      */
     public function __construct(
         protected string $uri,
@@ -43,7 +53,10 @@ class PingTask extends AbstractTask
         protected array $query = [],
         protected array $headers = [],
         protected string|null $body = null,
-    ) {}
+        null|callable $failure = null,
+    ) {
+        $this->failure = $failure;
+    }
 
     /**
      * Process the task.
@@ -86,9 +99,31 @@ class PingTask extends AbstractTask
         // Send request
         $this->response = $client->sendRequest($request);
 
+        // Default failure rule: throw if status >= 400
+        $failure = $this->failure ?? static function (ResponseInterface $response, PingTask $task): void {
+            if ($response->getStatusCode() >= 400) {
+                throw new TaskException(
+                    task: $task,
+                    message: sprintf(
+                        'Ping failed with status %s',
+                        $response->getStatusCode()
+                    ),
+                );
+            }
+        };
+        
+        $exception = null;
+        
+        try {
+            ($failure)($this->response, $this);
+        } catch (\Throwable $e) {
+            $exception = $e;
+        }
+        
         return new TaskResult(
             task: $this,
-            output: (string) $this->response->getBody()
+            output: (string) $this->response->getBody(),
+            exception: $exception,
         );
     }
     
@@ -154,6 +189,16 @@ class PingTask extends AbstractTask
     public function getBody(): null|string
     {
         return $this->body;
+    }
+    
+    /**
+     * Returns the failure.
+     *
+     * @return null|callable
+     */
+    public function getFailure(): null|callable
+    {
+        return $this->failure;
     }
     
     /**
