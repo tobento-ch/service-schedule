@@ -289,17 +289,19 @@ Check out the [Task Methods](#task-methods) section to learn more about the avai
 
 ### Ping Task
 
-The ping task may be used to ping the provided URI.
+The ping task may be used to send an HTTP request to the provided URI using any PSR-18 compatible HTTP client.
 
 ```php
+use Psr\Http\Message\ResponseInterface;
 use Tobento\Service\Schedule\Task\PingTask;
 use Tobento\Service\Schedule\Task\TaskInterface;
-use Psr\Http\Message\ResponseInterface;
 
 $task = new PingTask(
     uri: 'https://example.com/ping',
     method: 'GET', // default
-    options: [],
+    query: ['foo' => 'bar'], // optional
+    headers: ['Accept' => 'application/json'], // optional
+    body: null, // optional
 );
 
 var_dump($task instanceof TaskInterface);
@@ -308,9 +310,12 @@ var_dump($task instanceof TaskInterface);
 // Specific task methods:
 $uri = $task->getUri();
 $method = $task->getMethod();
-$options = $task->getOptions();
+$query = $task->getQuery();
+$headers = $task->getHeaders();
+$body = $task->getBody();
 
-// Returning null if task is not processed yet, otherwise the response.
+// Returning null if the task has not been processed yet,
+// otherwise the PSR-7 response instance.
 $response = $task->getResponse();
 // null|ResponseInterface
 ```
@@ -319,12 +324,24 @@ Check out the [Task Methods](#task-methods) section to learn more about the avai
 
 **Requirements**
 
-This ping task requires [**Guzzle, PHP HTTP client**](https://github.com/guzzle/guzzle):
+The ping task requires a PSR-18 HTTP client and PSR-17 factories to be available in your container:
+
+- `Psr\Http\Client\ClientInterface`
+- `Psr\Http\Message\RequestFactoryInterface`
+- `Psr\Http\Message\StreamFactoryInterface`
+
+You may use any implementation you prefer.  
+For example, a lightweight setup:
 
 ```
-composer require guzzlehttp/guzzle
+composer require nyholm/psr7 symfony/http-client
 ```
 
+This provides:
+- PSR-7 implementation
+- PSR-17 factories
+- PSR-18 client
+    
 ### Process Task
 
 The process task may be used to execute shell commands using the [Symfony Process Component](https://github.com/symfony/process).
@@ -782,7 +799,7 @@ Task Exception: Failed task's exception stack trace (if any)
 
 ### Ping Parameter
 
-The ping parameter may be used to ping the provided URI.
+The Ping parameter triggers an HTTP request to a given URI whenever the task reaches a specific lifecycle stage.
 
 ```php
 use Tobento\Service\Schedule\Task\CommandTask;
@@ -792,16 +809,18 @@ $task = new CommandTask('command:name')
     ->parameter(new Parameter\Ping(
         uri: 'https://example.com/task',
         method: 'GET', // default
-        options: [],
+        query: [],
+        headers: [],
+        body: null,
         handle: ['before', 'after', 'failed'], // default
-        // pings only if task failed:
+        // ping only when the task fails:
         // handle: ['failed'],
     ));
 ```
 
-A ```X-Task-Status``` header will be added to the request with a ```Starting```, ```Success``` or ```Failed``` value depending on its processing state.
+A ```X-Task-Status``` header will be added to the request with a ```Starting```, ```Success``` or ```Failed``` value depending on the task's processing state.
 
-In addition, you may use the ```before```, ```after``` and ```failed``` helper methods:
+You may also attach Ping parameters using the `before`, `after`, and `failed` helper methods:
 
 ```php
 use Tobento\Service\Schedule\Task\CommandTask;
@@ -821,11 +840,7 @@ $task = new CommandTask('command:name')
 
 **Requirements**
 
-This parameter requires [**Guzzle, PHP HTTP client**](https://github.com/guzzle/guzzle):
-
-```
-composer require guzzlehttp/guzzle
-```
+This parameter uses the same PSR-18 / PSR-17 HTTP client requirements described in the [Ping Task](#ping-task) section.
 
 ### Send Result To Parameter
 
