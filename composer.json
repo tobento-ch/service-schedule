@@ -1,6 +1,6 @@
 {
     "name": "tobento/service-schedule",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "type": "library",
     "description": "A task schedule system for running tasks at specific intervals.",
     "keywords": [
