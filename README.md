@@ -302,6 +302,10 @@ $task = new PingTask(
     query: ['foo' => 'bar'], // optional
     headers: ['Accept' => 'application/json'], // optional
     body: null, // optional
+    
+    // Optional failure callback:
+    // Throw an exception to mark the task as failed.
+    failure: null,
 );
 
 var_dump($task instanceof TaskInterface);
@@ -321,6 +325,33 @@ $response = $task->getResponse();
 ```
 
 Check out the [Task Methods](#task-methods) section to learn more about the available methods as well as the [Task Parameters](#task-parameters).
+
+#### Failure Handling
+
+By default, the task is considered failed if the HTTP status code is 400 or higher.
+
+You can override this behavior by providing a custom failure callback:
+
+```php
+use Psr\Http\Message\ResponseInterface;
+use Tobento\Service\Schedule\Task\PingTask;
+
+$task = new PingTask(
+    uri: 'https://example.com/health',
+    failure: function (ResponseInterface $response, PingTask $task): void {
+        $body = (string) $response->getBody();
+
+        // Example: require exact "OK" body
+        if ($response->getStatusCode() !== 200 || trim($body) !== 'OK') {
+            throw new \RuntimeException('Health check failed');
+        }
+    }
+);
+```
+
+Rules:
+- Throw any exception, task is marked as **failed**
+- Callback completes normally, task is **successful**
 
 **Requirements**
 
@@ -812,6 +843,11 @@ $task = new CommandTask('command:name')
         query: [],
         headers: [],
         body: null,
+        
+        // Optional failure callback:
+        // Throw an exception to mark the ping as failed.
+        failure: null,
+        
         handle: ['before', 'after', 'failed'], // default
         // ping only when the task fails:
         // handle: ['failed'],
@@ -837,6 +873,11 @@ $task = new CommandTask('command:name')
         uri: 'https://example.com/task-failed',
     ));
 ```
+
+**Failure Handling**
+
+The Ping parameter supports the same failure‑handling behavior as the Ping Task.  
+See the [Ping Task](#ping-task) section for details on defining custom failure rules.
 
 **Requirements**
 
