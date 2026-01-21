@@ -51,12 +51,15 @@ class PingTest extends TestCase
 
     public function testSpecificMethods()
     {
+        $failure = function () {};
+        
         $param = new Ping(
             uri: 'http://example.com/task',
             method: 'POST',
             query: ['foo' => 'bar'],
             headers: ['Accept' => 'application/json'],
-            body: 'payload'
+            body: 'payload',
+            failure: $failure,
         );
 
         $this->assertSame('http://example.com/task', $param->getUri());
@@ -64,6 +67,7 @@ class PingTest extends TestCase
         $this->assertSame(['foo' => 'bar'], $param->getQuery());
         $this->assertSame(['Accept' => 'application/json'], $param->getHeaders());
         $this->assertSame('payload', $param->getBody());
+        $this->assertSame($failure, $param->getFailure());
     }
 
     public function testPingBefore()

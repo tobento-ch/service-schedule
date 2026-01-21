@@ -80,12 +80,15 @@ class PingTaskTest extends TestCase
 
     public function testSpecificMethods()
     {
+        $failure = function () {};
+        
         $task = new PingTask(
             uri: 'http://example.com/task',
             method: 'POST',
             query: ['foo' => 'bar'],
             headers: ['Accept' => 'application/json'],
-            body: 'payload'
+            body: 'payload',
+            failure: $failure,
         );
 
         $this->assertSame('http://example.com/task', $task->getUri());
@@ -94,6 +97,7 @@ class PingTaskTest extends TestCase
         $this->assertSame(['Accept' => 'application/json'], $task->getHeaders());
         $this->assertSame('payload', $task->getBody());
         $this->assertSame(null, $task->getResponse());
+        $this->assertSame($failure, $task->getFailure());
     }
     
     public function testProcessTaskMethod()
@@ -153,6 +157,61 @@ class PingTaskTest extends TestCase
         $this->assertSame('https://example.com/ping?foo=bar', (string)$request->getUri());
         $this->assertSame(['application/json'], $request->getHeader('Accept'));
         $this->assertSame('payload', (string)$request->getBody());
+    }
+    
+    public function testProcessTaskFailsOnHttpErrorByDefault()
+    {
+        $container = new Container();
+
+        $client = new \Symfony\Component\HttpClient\Psr18Client(
+            new \Symfony\Component\HttpClient\MockHttpClient([
+                new \Symfony\Component\HttpClient\Response\MockResponse(
+                    'Error',
+                    ['http_code' => 500]
+                )
+            ])
+        );
+
+        $container->set(ClientInterface::class, $client);
+        $container->set(RequestFactoryInterface::class, new Psr17Factory());
+        $container->set(StreamFactoryInterface::class, new Psr17Factory());
+
+        $task = new PingTask(uri: '/');
+
+        $result = $task->processTask($container);
+
+        $this->assertFalse($result->isSuccessful());
+        $this->assertInstanceOf(\Throwable::class, $result->exception());
+        $this->assertSame('Error', $result->output());
+    }
+    
+    public function testProcessTaskUsesCustomFailureCallback()
+    {
+        $container = new Container();
+
+        $client = new \Symfony\Component\HttpClient\Psr18Client(
+            new \Symfony\Component\HttpClient\MockHttpClient([
+                new \Symfony\Component\HttpClient\Response\MockResponse(
+                    'OK',
+                    ['http_code' => 200]
+                )
+            ])
+        );
+
+        $container->set(ClientInterface::class, $client);
+        $container->set(RequestFactoryInterface::class, new Psr17Factory());
+        $container->set(StreamFactoryInterface::class, new Psr17Factory());
+
+        $failure = function (ResponseInterface $res, PingTask $task): void {
+            throw new \RuntimeException('custom-failure');
+        };
+
+        $task = new PingTask(uri: '/', failure: $failure);
+
+        $result = $task->processTask($container);
+
+        $this->assertFalse($result->isSuccessful());
+        $this->assertSame('custom-failure', $result->exception()->getMessage());
     }
 }
 
