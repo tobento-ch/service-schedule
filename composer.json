@@ -1,6 +1,6 @@
 {
     "name": "tobento/service-schedule",
-    "version": "2.0",
+    "version": "2.0.1",
     "type": "library",
     "description": "A task schedule system for running tasks at specific intervals.",
     "keywords": [
@@ -27,6 +27,9 @@
         "psr/clock": "^1.0",
         "psr/simple-cache": "^3.0",
         "psr/event-dispatcher": "^1.0",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^2.0",
         "tobento/service-autowire": "^2.0",
         "tobento/service-file-creator": "^2.0",
         "tobento/service-collection": "^2.0",
@@ -40,7 +43,8 @@
         "tobento/service-mail": "May be used to support sending mails",
         "tobento/service-notifier": "May be used to support sending notifications",
         "symfony/process": "Required to support the process task",
-        "guzzlehttp/guzzle": "Required to support the ping task and parameter"
+        "nyholm/psr7": "Required to support the ping task (PSR-17 factories)",
+        "symfony/http-client": "Required to support the ping task (PSR-18 client)"
     },    
     "require-dev": {
         "phpunit/phpunit": "^12.3",
@@ -52,8 +56,9 @@
         "tobento/service-cache": "^2.0",
         "tobento/service-mail": "^2.0",
         "tobento/service-notifier": "^2.0",
+        "nyholm/psr7": "^1.8",
+        "symfony/http-client": "^8.0",
         "symfony/process": "^7.3",
-        "guzzlehttp/guzzle": "^7.10",
         "mockery/mockery": "^1.6"
     },
     "autoload": {
