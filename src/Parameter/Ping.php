@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Tobento\Service\Schedule\Parameter;
 
+use Psr\Container\ContainerInterface;
+use Tobento\Service\Schedule\Task\PingTask;
 use Tobento\Service\Schedule\TaskInterface;
 use Tobento\Service\Schedule\TaskResultInterface;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Client;
 
 /**
  * Ping.
@@ -28,13 +28,17 @@ class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
      *
      * @param string $uri
      * @param string $method
-     * @param array $options
+     * @param array $query
+     * @param array $headers
+     * @param string|null $body
      * @param array $handle
      */
     public function __construct(
         protected string $uri,
         protected string $method = 'GET',
-        protected array $options = [],
+        protected array $query = [],
+        protected array $headers = [],
+        protected string|null $body = null,
         protected array $handle = ['before', 'after', 'failed'],
     ) {}
 
@@ -59,13 +63,33 @@ class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
     }
     
     /**
-     * Returns the options.
+     * Returns the query.
      *
      * @return array
      */
-    public function getOptions(): array
+    public function getQuery(): array
     {
-        return $this->options;
+        return $this->query;
+    }
+
+    /**
+     * Returns the headers.
+     *
+     * @return array
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+    
+    /**
+     * Returns the body.
+     *
+     * @return null|string
+     */
+    public function getBody(): null|string
+    {
+        return $this->body;
     }
     
     /**
@@ -102,71 +126,70 @@ class Ping extends Parameter implements BeforeTaskHandler, AfterTaskHandler, Fai
      * Before task.
      *
      * @param TaskInterface $task
-     * @param null|ClientInterface $client
+     * @param ContainerInterface $container
      * @return void
      */
-    public function beforeTask(TaskInterface $task, null|ClientInterface $client = null): void
+    public function beforeTask(TaskInterface $task, ContainerInterface $container): void
     {
         if (!in_array('before', $this->handle)) {
             return;
         }
         
-        $client = $client ?: new Client();
-        $options = $this->getOptions();
-        $options['headers']['X-Task-Status'] = 'Starting';
-        
-        $client->request(
-            method: $this->getMethod(),
-            uri: $this->getUri(),
-            options: $options,
-        );
+        $this->runPing(status: 'Starting', container: $container);
     }
     
     /**
      * After task.
      *
      * @param TaskResultInterface $result
-     * @param null|ClientInterface $client
+     * @param ContainerInterface $container
      * @return void
      */
-    public function afterTask(TaskResultInterface $result, null|ClientInterface $client = null): void
+    public function afterTask(TaskResultInterface $result, ContainerInterface $container): void
     {
         if (!in_array('after', $this->handle)) {
             return;
         }
         
-        $client = $client ?: new Client();
-        $options = $this->getOptions();
-        $options['headers']['X-Task-Status'] = 'Success';
-        
-        $client->request(
-            method: $this->getMethod(),
-            uri: $this->getUri(),
-            options: $options,
-        );
+        $this->runPing(status: 'Success', container: $container);
     }
     
     /**
      * Failed task.
      *
      * @param TaskResultInterface $result
-     * @param null|ClientInterface $client
+     * @param ContainerInterface $container
      * @return void
      */
-    public function failedTask(TaskResultInterface $result, null|ClientInterface $client = null): void
+    public function failedTask(TaskResultInterface $result, ContainerInterface $container): void
     {
         if (!in_array('failed', $this->handle)) {
             return;
         }
         
-        $client = $client ?: new Client();
-        $options = $this->getOptions();
-        $options['headers']['X-Task-Status'] = 'Failed';
-        
-        $client->request(
-            method: $this->getMethod(),
+        $this->runPing(status: 'Failed', container: $container);
+    }
+    
+    /**
+     * Run the ping.
+     *
+     * @param string $status
+     * @param ContainerInterface $container
+     * @return void
+     */
+    protected function runPing(string $status, ContainerInterface $container): void
+    {
+        $headers = $this->headers;
+        $headers['X-Task-Status'] = $status;
+
+        $task = new PingTask(
             uri: $this->getUri(),
-            options: $options,
+            method: $this->getMethod(),
+            query: $this->getQuery(),
+            headers: $headers,
+            body: $this->getBody(),
         );
+
+        $task->processTask($container);
     }
 }
